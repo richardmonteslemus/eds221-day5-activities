@@ -1,0 +1,38 @@
+---
+title: "Runoff Volume Calculations"
+format: html
+---
+
+```{r}
+# load in lib and function for calculating storm run off
+library(tidyverse)
+library(here)
+source(here::here("src", "storm_runoff.R"))
+```
+
+```{r}
+# Create data frame desired vectors
+a <- 182
+IA <- seq(from = 0.6, to = 0.8, by = 0.01)
+pred_vol <- predict_runoff(IA, a)
+
+runoff_df <- data.frame(IA, pred_vol)
+```
+
+```{r}
+# Create plot for volume per impervious fraction 
+run_off_plot <- runoff_df %>% 
+  ggplot(aes(x = IA, y = pred_vol)) + 
+  geom_point() + 
+  geom_line() + 
+  labs(
+    x = "Impervious fraction",
+    y = "Volume (ft^3)"
+  )
+
+ggsave( filename = here::here("figs", "run_off_plot.png"),
+  plot = run_off_plot)
+```
+
+
+

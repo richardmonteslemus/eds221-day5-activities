@@ -1,0 +1,64 @@
+---
+title: "US Tilapia Imports"
+format: html
+---
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+```
+
+```{r}
+# Read in csv file and pivot longer 
+us_tilapia_imports <- read_csv(here::here("data", "us_tilapia_imports.csv")) %>% 
+  pivot_longer(!country, names_to = "year", values_to = "import_count")
+```
+```{r}
+
+us_tilapia_imports<- us_tilapia_imports %>% 
+  mutate(year = as.numeric(us_tilapia_imports[["year"]]))
+```
+
+```{r}
+class(us_tilapia_imports[["year"]])
+```
+
+```{r}
+# Coerce class of year from character into numeric
+yearly_tilapia_tot <- us_tilapia_imports %>% 
+  dplyr::group_by(year) %>% 
+  summarise(sum_value = sum(import_count, na.rm = TRUE))
+```
+
+```{r}
+# Create plot for tilapia imports per year 
+tilapia_import_plot <- yearly_tilapia_tot %>% 
+  ggplot(aes(x = year, y = sum_value)) + 
+  geom_line() + 
+  labs(x = "year", y = "tilapia import count")
+
+ggsave( filename = here::here("figs", "import_by_year.png"),
+  plot = tilapia_import_plot)
+```
+
+```{r}
+# Calculate import per country 
+country_tilapia_tot <- us_tilapia_imports %>% 
+  dplyr::group_by(year, country) %>% 
+  summarise(sum_value = sum(import_count, na.rm = TRUE)) %>% 
+  filter(country %in% c("Ecuador", "Honduras", "Costa Rica", "Mexico")) 
+```
+
+```{r}
+# Create plot for tilapia imports per country per year
+til_country_plot <- country_tilapia_tot %>% 
+  ggplot(aes(x = year, y = sum_value)) + 
+  geom_line(aes(color = country)) + 
+  facet_wrap(vars(country)) + 
+  labs(y = "tilapia import count") + 
+  theme_grey()
+
+ggsave( filename = here::here("figs", "til_country_imp.jpg"),
+  plot = til_country_plot)
+```
+
